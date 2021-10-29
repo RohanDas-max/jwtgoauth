@@ -9,10 +9,7 @@ import (
 	"github.com/rohandas-max/shoping-site/database"
 	"github.com/rohandas-max/shoping-site/models"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-var db *gorm.DB
 
 const SecretKey = "secret"
 
@@ -29,9 +26,8 @@ func Register(c *fiber.Ctx) error {
 		Email:    data["email"],
 		Password: password,
 	}
-	db = database.DB
 
-	db.Create(&user)
+	database.DB.Create(&user)
 
 	return c.JSON(user)
 
@@ -45,10 +41,11 @@ func Login(c *fiber.Ctx) error {
 
 	err := c.BodyParser(&data)
 	if err != nil {
-		return err
+		c.JSON("error error")
 	}
 	var user models.User
-	db.Where("email = ?", data["email"]).First(&user)
+
+	database.DB.Where("email = ?", data["email"]).Find(&user)
 
 	if user.Id == 0 {
 		c.Status(fiber.StatusNotFound)
@@ -108,6 +105,21 @@ func User(c *fiber.Ctx) error {
 	claims := token.Claims.(*jwt.StandardClaims)
 	var user models.User
 
-	db.Where("id=?", claims.Issuer).First(&user)
+	database.DB.Where("id=?", claims.Issuer).First(&user)
 	return c.JSON(user)
+}
+
+func Logout(c *fiber.Ctx) error {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	}
+
+	c.Cookie(&cookie)
+
+	return c.JSON(fiber.Map{
+		"message": "log out success",
+	})
 }
