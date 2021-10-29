@@ -5,9 +5,12 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/rohandas-max/shoping-site/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+var DB *gorm.DB
 
 func Connection() {
 
@@ -21,12 +24,16 @@ func Connection() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", envMap["HOST"], envMap["USER"], envMap["PASSWORD"], envMap["NAME"], envMap["DBPORT"])
 
 	//* Starting/Opening Database connection via gorm
-	_, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		fmt.Println("DB Connected Successfully!")
 	}
-	//* closing when done
+
+	DB = connection
+
+	connection.AutoMigrate(&models.User{})
+
 }

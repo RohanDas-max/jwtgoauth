@@ -25,6 +25,4 @@ func main() {
 		app.Listen(envMap["PORT"])
 	}
 
-	// app.Listen(os.Getenv("PORT"))
-
 }
